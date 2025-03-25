@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Earthquake Map</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body> 
+  <h1>Earthquake Map (2024–2025)</h1>
+  <!-- Map Controls -->
+<div id="map-controls">
+    <button id="basemap-toggle">🗺 Base Map & Overlays</button>
+    <div id="basemap-menu" class="hidden">
+      <label><input type="radio" name="basemap" value="streets" checked /> Streets</label><br/>
+      <label><input type="radio" name="basemap" value="satellite" /> Satellite</label><br/>
+      <label><input type="radio" name="basemap" value="dark" /> Dark</label><br/>
+    </div>
+  </div>
+  
+  <div id="map"></div>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>

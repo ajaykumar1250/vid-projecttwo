@@ -25,6 +25,18 @@
       <label><input type="radio" name="basemap" value="satellite" /> Satellite</label><br/>
       <label><input type="radio" name="basemap" value="dark" /> Dark</label><br/>
     </div>
+    <!-- Map Legend Button -->
+<button id="legend-toggle">📘 Map Legend</button>
+<div id="legend-box" class="hidden">
+  <h4>Legend</h4>
+  <div><span class="legend-circle small"></span> Mag 3.0 - 3.9</div>
+  <div><span class="legend-circle medium"></span> Mag 4.0 - 4.9</div>
+  <div><span class="legend-circle large"></span> Mag 5.0 - 5.9</div>
+  <div><span class="legend-circle xlarge"></span> Mag 6.0+</div>
+  <p><strong>Circle size</strong> = Earthquake magnitude<br/>
+     <strong>Color</strong> = Intensity (green → yellow → red)</p>
+</div>
+
   </div>
   
   <div id="map"></div>

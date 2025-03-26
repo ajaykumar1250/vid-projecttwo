@@ -43,7 +43,7 @@ const quakeGroup = L.layerGroup();
 window.earthquakeLayer = quakeGroup;
 
 // Load earthquake CSV data
-d3.csv('/data/cleaned_earthquakes_2024_2025.csv').then(data => {
+d3.csv('/vid-projecttwo/data/cleaned_earthquakes_2024_2025.csv').then(data => {
   data.forEach(d => {
     const lat = +d.latitude;
     const lon = +d.longitude;
@@ -60,13 +60,17 @@ d3.csv('/data/cleaned_earthquakes_2024_2025.csv').then(data => {
 
     // Create circle marker
     const circle = L.circleMarker([lat, lon], {
-      radius: 4 + magnitude,
+      radius: depth <= 10 ? 4 :
+              depth <= 30 ? 6 :
+              depth <= 70 ? 8 :
+              depth <= 300 ? 10 : 12,
       fillColor: color,
       color: "#222",
       weight: 1,
       opacity: 1,
       fillOpacity: 0.8
     });
+    
 
     // Hover tooltip
     circle.bindTooltip(
@@ -87,3 +91,9 @@ d3.csv('/data/cleaned_earthquakes_2024_2025.csv').then(data => {
 
   quakeGroup.addTo(map);
 });
+
+// Legend toggle
+document.getElementById("legend-toggle").addEventListener("click", () => {
+  document.getElementById("legend-box").classList.toggle("hidden");
+});
+

@@ -56,5 +56,67 @@ body {
     display: none;
   }
   
+  #legend-toggle {
+    margin-top: 10px;
+    background-color: #3498db;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+  }
+  
+  #legend-box {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 180px;
+  }
+  
+  #legend-box.hidden {
+    display: none;
+  }
+  
+  #legend-box h4 {
+    margin: 0 0 8px 0;
+  }
+  
+  .legend-circle {
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  
+  .legend-circle.small {
+    width: 8px;
+    height: 8px;
+    background-color: #00ff00;
+  }
+  
+  .legend-circle.medium {
+    width: 12px;
+    height: 12px;
+    background-color: #ffff00;
+  }
+  
+  .legend-circle.large {
+    width: 16px;
+    height: 16px;
+    background-color: #ff8000;
+  }
+  
+  .legend-circle.xlarge {
+    width: 20px;
+    height: 20px;
+    background-color: #ff0000;
+  }
+  
   
   

@@ -117,6 +117,146 @@ body {
     height: 20px;
     background-color: #ff0000;
   }
+
+  /* Color scale (same size) */
+.legend-circle.green {
+  background-color: #00ff00;
+}
+
+.legend-circle.yellow {
+  background-color: #ffff00;
+}
+
+.legend-circle.orange {
+  background-color: #ff8000;
+}
+
+.legend-circle.red {
+  background-color: #ff0000;
+}
+
+/* Depth-based size scale */
+.legend-circle.depth4 {
+  width: 8px;
+  height: 8px;
+  background-color: #999;
+}
+
+.legend-circle.depth6 {
+  width: 12px;
+  height: 12px;
+  background-color: #999;
+}
+
+.legend-circle.depth8 {
+  width: 16px;
+  height: 16px;
+  background-color: #999;
+}
+
+.legend-circle.depth10 {
+  width: 20px;
+  height: 20px;
+  background-color: #999;
+}
+
+.legend-circle.depth12 {
+  width: 24px;
+  height: 24px;
+  background-color: #999;
+}
+
+#advanced-search-toggle {
+  margin-top: 10px;
+  background-color: #2ecc71;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+}
+
+#advanced-search-panel {
+  background-color: #fff;
+  color: #000;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 250px;
+  border: 1px solid #ccc;
+}
+
+#advanced-search-panel input {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 5px;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+#suggestions {
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+#suggestions div {
+  padding: 4px;
+  cursor: pointer;
+}
+
+#suggestions div:hover {
+  background-color: #eee;
+}
+
+#mini-map-container {
+  margin-top: 10px;
+}
+
+#mini-map {
+  height: 200px;
+  width: 100%;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+#clear-search-btn {
+  margin-top: 5px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#search-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+#close-search-panel {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #e74c3c;
+}
+#advanced-search-panel.hidden {
+  display: none;
+}
+
+
+
+
+
   
   
   

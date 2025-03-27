@@ -29,13 +29,45 @@
 <button id="legend-toggle">📘 Map Legend</button>
 <div id="legend-box" class="hidden">
   <h4>Legend</h4>
-  <div><span class="legend-circle small"></span> Mag 3.0 - 3.9</div>
-  <div><span class="legend-circle medium"></span> Mag 4.0 - 4.9</div>
-  <div><span class="legend-circle large"></span> Mag 5.0 - 5.9</div>
-  <div><span class="legend-circle xlarge"></span> Mag 6.0+</div>
-  <p><strong>Circle size</strong> = Earthquake magnitude<br/>
-     <strong>Color</strong> = Intensity (green → yellow → red)</p>
+
+  <div><strong>Color → Magnitude</strong></div>
+  <div><span class="legend-circle small green"></span> Mag &lt; 4.0</div>
+  <div><span class="legend-circle small yellow"></span> Mag 4.0 - 4.9</div>
+  <div><span class="legend-circle small orange"></span> Mag 5.0 - 5.9</div>
+  <div><span class="legend-circle small red"></span> Mag ≥ 6.0</div>
+
+  <br/>
+
+  <div><strong>Size → Depth</strong></div>
+  <div><span class="legend-circle depth4"></span> Depth ≤ 10 km</div>
+  <div><span class="legend-circle depth6"></span> Depth 11–30 km</div>
+  <div><span class="legend-circle depth8"></span> Depth 31–70 km</div>
+  <div><span class="legend-circle depth10"></span> Depth 71–300 km</div>
+  <div><span class="legend-circle depth12"></span> Depth &gt; 300 km</div>
 </div>
+
+<!-- Advanced Search Button -->
+<button id="advanced-search-toggle">🔍 Advanced Search</button>
+
+<div id="advanced-search-panel" class="hidden">
+  <div id="search-panel-header">
+    <span>Advanced Search</span>
+    <button id="close-search-panel">❌</button>
+  </div>
+
+  <input type="text" id="country-input" placeholder="Enter country name..." autocomplete="off" />
+  <div id="suggestions"></div>
+  <button id="country-search-btn">Search</button>
+  <button id="clear-search-btn">Clear</button>
+
+  <div id="mini-map-container" class="hidden">
+    <div id="mini-map"></div>
+  </div>
+</div>
+
+
+
+
 
   </div>
   

@@ -32,7 +32,7 @@ document.querySelectorAll("input[name='basemap']").forEach(radio => {
 const quakeGroup = L.layerGroup();
 window.earthquakeLayer = quakeGroup;
 
-d3.csv('/vid-projecttwo/data/cleaned_earthquakes_2024_2025.csv').then(data => {
+d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
   data.forEach(d => {
     const lat = +d.latitude;
     const lon = +d.longitude;
@@ -161,7 +161,7 @@ document.getElementById('mini-map-container').innerHTML = '<div id="mini-map"></
       window.countryHighlightLayer.clearLayers();
     }
 
-    d3.csv('/vid-projecttwo/data/cleaned_earthquakes_2024_2025.csv').then(data => {
+    d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
       data.forEach(d => {
         const lat = +d.latitude;
         const lon = +d.longitude;

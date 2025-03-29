@@ -14,6 +14,15 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Leaflet.heat plugin -->
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <!-- CesiumJS -->
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
+
+
 </head>
 <body> 
   <h1>Earthquake Map (2024–2025)</h1>
@@ -21,9 +30,13 @@
 <div id="map-controls">
     <button id="basemap-toggle">🗺 Base Map & Overlays</button>
     <div id="basemap-menu" class="hidden">
-      <label><input type="radio" name="basemap" value="streets" checked /> Streets</label><br/>
+      <label><input type="radio" name="basemap" value="streets" /> Streets</label><br/>
       <label><input type="radio" name="basemap" value="satellite" /> Satellite</label><br/>
-      <label><input type="radio" name="basemap" value="dark" /> Dark</label><br/>
+      <label><input type="radio" name="basemap" value="dark" checked /> Dark</label><br/>
+
+      <strong>Overlays</strong><br>
+      <label><input type="checkbox" id="toggle-circles" checked> Circle Markers</label><br>
+      <label><input type="checkbox" id="toggle-heatmap" checked> Heatmap</label>
     </div>
     <!-- Map Legend Button -->
 <button id="legend-toggle">📘 Map Legend</button>
@@ -65,15 +78,75 @@
   </div>
 </div>
 
+<!-- Scrollable Timeline Panel -->
+<div id="year-select-panel">
+  <label for="year-dropdown">Select Year:</label>
+  <select id="year-dropdown"></select>
+</div>
+
+<!-- Date Range Selector -->
+<button id="date-range-toggle">📅 Select Date Range</button>
+
+<div id="date-range-panel" class="hidden">
+  <label for="start-date">Start Date:</label>
+  <input type="date" id="start-date">
+
+  <label for="end-date">End Date:</label>
+  <input type="date" id="end-date">
+
+  <button id="apply-date-range">Filter</button>
+  <button id="reset-date-range">Reset</button>
+
+</div>
+
+<!-- <div id="magnitude-chart-panel">
+  <h3>Earthquake Frequency by Magnitude</h3>
+  <svg id="magnitude-chart" width="500" height="300"></svg>
+</div> -->
+
+
+
+
+
+
+
 
 
 
 
   </div>
+
+  
   
   <div id="map"></div>
 
+  <!-- <button id="toggle-3d">🌍</button> -->
+
+
+  <!-- Visualizations Toggle Button -->
+<button id="viz-toggle">📊 See Visualizations</button>
+
+<!-- Sliding Panel -->
+<div id="viz-panel" class="hidden">
+  <h3>Visual Insights</h3>
+
+  <div id="magnitude-chart-panel">
+    <h4>By Magnitude</h4>
+    <svg id="magnitude-chart" width="100%" height="250"></svg>
+  </div>
+
+  <div id="depth-chart-panel">
+    <h4>By Depth</h4>
+    <svg id="depth-chart" width="100%" height="250"></svg>
+  </div>
+
+  <!-- Cesium Globe Container
+  <div id="cesiumContainer" class="hidden"></div> -->
+
+  
+
   <!-- Script -->
   <script src="script.js"></script>
+  
 </body>
 </html>

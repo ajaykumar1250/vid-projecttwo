@@ -1,5 +1,10 @@
 // Create the Leaflet map
 const map = L.map('map').setView([20, 0], 2);
+let viewer3D;
+let is3DActive = false;
+
+
+
 
 // Define base map layers
 const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -11,7 +16,7 @@ const satellite = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
 const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; CartoDB'
 });
-streets.addTo(map);
+dark.addTo(map);
 
 // Base map toggle
 document.getElementById("basemap-toggle").addEventListener("click", () => {
@@ -72,6 +77,509 @@ d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
 
   quakeGroup.addTo(map);
 });
+
+let heatLayer = null;
+
+
+let allData = []; // Store full dataset
+let currentYear = null;
+
+
+// 3D Map loading 
+
+// function initCesiumViewer(data) {
+//   viewer3D = new Cesium.Viewer('cesiumContainer', {
+//     timeline: false,
+//     animation: false,
+//     baseLayerPicker: false,
+//     geocoder: false,
+//     homeButton: false,
+//     infoBox: false,
+//     sceneModePicker: false,
+//     navigationHelpButton: false,
+//     scene3DOnly: true,
+
+//   });
+
+//   // Add earthquake points
+//   data.forEach(d => {
+//     const mag = +d.mag;
+//     const depth = +d.depth;
+
+//     const color = mag >= 6 ? Cesium.Color.RED :
+//                   mag >= 5 ? Cesium.Color.ORANGE :
+//                   mag >= 4 ? Cesium.Color.YELLOW : Cesium.Color.LIME;
+
+//     viewer3D.entities.add({
+//       position: Cesium.Cartesian3.fromDegrees(+d.longitude, +d.latitude),
+//       point: {
+//         pixelSize: depth <= 10 ? 4 :
+//                    depth <= 30 ? 6 :
+//                    depth <= 70 ? 8 :
+//                    depth <= 300 ? 10 : 12,
+//         color: color,
+//         outlineColor: Cesium.Color.BLACK,
+//         outlineWidth: 1,
+//       },
+//       description: `Mag: ${mag}<br>Depth: ${depth} km<br>Place: ${d.place}`
+//     });
+//   });
+
+//   viewer3D.zoomTo(viewer3D.entities);
+// }
+
+
+// document.getElementById('toggle-3d').addEventListener('click', () => {
+//   is3DActive = !is3DActive;
+
+//   if (is3DActive) {
+//     if (heatLayer) {
+//       map.removeLayer(heatLayer);
+//     }
+//     // Hide Leaflet map, show Cesium
+//     document.getElementById('map').style.display = 'none';
+//     document.getElementById('cesiumContainer').style.display = 'block';
+//     document.getElementById('toggle-3d').textContent = '🗺️';
+
+//     if (!viewer3D) {
+//       initCesiumViewer(currentFilteredData); // use full data or filtered if desired
+//     }
+//   } else {
+//     // Show Leaflet map, hide Cesium
+//     document.getElementById('map').style.display = 'block';
+//     document.getElementById('cesiumContainer').style.display = 'none';
+//     document.getElementById('toggle-3d').textContent = '🌍';
+
+//     // 🔁 If user had heatmap enabled, re-render it
+//     if (document.getElementById('toggle-heatmap').checked) {
+//       renderHeatmap(currentFilteredData); // or allData if not filtering
+//     }
+
+    
+//   }
+// });
+
+
+
+// Load full data once and keep in memory
+d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
+  data.forEach(d => {
+    d.latitude = +d.latitude;
+    d.longitude = +d.longitude;
+    d.mag = +d.mag;
+    d.depth = +d.depth;
+    d.year = +d.year;
+  });
+
+  allData = data;
+  renderMapByYear(2025); // Load latest year initially
+  renderYearDropdown();
+  // renderMagnitudeChart(allData);
+});
+
+// let currentFilteredData = allData;
+
+
+// Function to render map for a specific year
+function renderMapByYear(year) {
+  currentYear = year;
+  const filtered = allData.filter(d => d.year === year);
+
+  quakeGroup.clearLayers();
+
+  filtered.forEach(d => {
+    const color = d.mag >= 6 ? '#ff0000' :
+                  d.mag >= 5 ? '#ff8000' :
+                  d.mag >= 4 ? '#ffff00' : '#00ff00';
+
+    const radius = d.depth <= 10 ? 4 :
+                   d.depth <= 30 ? 6 :
+                   d.depth <= 70 ? 8 :
+                   d.depth <= 300 ? 10 : 12;
+
+    const localTime = new Date(d.time).toLocaleString();
+
+    const circle = L.circleMarker([d.latitude, d.longitude], {
+      radius,
+      fillColor: color,
+      color: "#222",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).bindTooltip(
+      `<b>${d.place}</b><br/>Mag: ${d.mag}, Depth: ${d.depth} km<br/>${localTime}`,
+      {
+        direction: 'top',
+        sticky: true,
+        opacity: 0.9,
+        className: 'quake-tooltip'
+      }
+    );
+
+    quakeGroup.addLayer(circle);
+  });
+
+  quakeGroup.addTo(map);
+
+  // Update active year UI
+  document.querySelectorAll('.year-item').forEach(el => {
+    el.classList.toggle('active', +el.dataset.year === year);
+  });
+  // currentFilteredData = filtered; // Update global tracker
+  renderMagnitudeChart(filtered);  // Update chart
+  renderDepthChart(filtered);
+  renderHeatmap(filtered);
+
+
+
+}
+// Overlay toggle logic
+document.getElementById('toggle-circles').addEventListener('change', function () {
+  if (this.checked) {
+    map.addLayer(quakeGroup);
+  } else {
+    map.removeLayer(quakeGroup);
+  }
+});
+
+document.getElementById('toggle-heatmap').addEventListener('change', function () {
+  if (this.checked && heatLayer) {
+    map.addLayer(heatLayer);
+  } else if (heatLayer) {
+    map.removeLayer(heatLayer);
+  }
+});
+
+// Respect toggle states on each render
+if (!document.getElementById('toggle-circles').checked) {
+  map.removeLayer(quakeGroup);
+}
+
+if (!document.getElementById('toggle-heatmap').checked && heatLayer) {
+  map.removeLayer(heatLayer);
+}
+
+
+
+function renderMapByDateRange(startDateStr, endDateStr) {
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  quakeGroup.clearLayers();
+
+  const filtered = allData.filter(d => {
+    const quakeTime = new Date(d.time);
+    return quakeTime >= start && quakeTime <= end;
+  });
+
+  filtered.forEach(d => {
+    const color = d.mag >= 6 ? '#ff0000' :
+                  d.mag >= 5 ? '#ff8000' :
+                  d.mag >= 4 ? '#ffff00' : '#00ff00';
+
+    const radius = d.depth <= 10 ? 4 :
+                   d.depth <= 30 ? 6 :
+                   d.depth <= 70 ? 8 :
+                   d.depth <= 300 ? 10 : 12;
+
+    const localTime = new Date(d.time).toLocaleString();
+
+    const circle = L.circleMarker([d.latitude, d.longitude], {
+      radius,
+      fillColor: color,
+      color: "#222",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).bindTooltip(
+      `<b>${d.place}</b><br/>Mag: ${d.mag}, Depth: ${d.depth} km<br/>${localTime}`,
+      {
+        direction: 'top',
+        sticky: true,
+        opacity: 0.9,
+        className: 'quake-tooltip'
+      }
+    );
+
+    quakeGroup.addLayer(circle);
+  });
+  // currentFilteredData = filtered; // Update global tracker
+  renderMagnitudeChart(filtered);  // Update chart
+  renderDepthChart(filtered);
+  renderHeatmap(filtered);
+
+
+
+}
+
+
+function renderYearDropdown() {
+  const dropdown = document.getElementById('year-dropdown');
+  for (let y = 2004; y <= 2025; y++) {
+    const option = document.createElement('option');
+    option.value = y;
+    option.textContent = y;
+    dropdown.appendChild(option);
+  }
+
+  dropdown.value = 2025; // default year
+
+  dropdown.addEventListener('change', () => {
+    renderMapByYear(+dropdown.value);
+  });
+}
+
+document.getElementById('date-range-toggle').addEventListener('click', () => {
+  document.getElementById('date-range-panel').classList.toggle('hidden');
+});
+
+document.getElementById('apply-date-range').addEventListener('click', () => {
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+
+  if (!start || !end) {
+    alert('Please select both start and end dates.');
+    return;
+  }
+
+  renderMapByDateRange(start, end);
+});
+
+document.getElementById('reset-date-range').addEventListener('click', () => {
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
+  document.getElementById('date-range-panel').classList.add('hidden');
+
+  // Reset to most recent year (2024)
+  document.getElementById('year-dropdown').value = '2024';
+  renderMapByYear(2024);
+});
+
+// Visualisations section
+
+function renderMagnitudeChart(data) {
+  // Binning buckets
+  const bins = {
+    "2.0–2.9": 0,
+    "3.0–3.9": 0,
+    "4.0–4.9": 0,
+    "5.0–5.9": 0,
+    "6.0–6.9": 0,
+    "7.0–7.9": 0,
+    "8.0+": 0
+  };
+
+  // Bin the data
+  data.forEach(d => {
+    const mag = +d.mag;
+    if (mag >= 2 && mag < 3) bins["2.0–2.9"]++;
+    else if (mag < 4) bins["3.0–3.9"]++;
+    else if (mag < 5) bins["4.0–4.9"]++;
+    else if (mag < 6) bins["5.0–5.9"]++;
+    else if (mag < 7) bins["6.0–6.9"]++;
+    else if (mag < 8) bins["7.0–7.9"]++;
+    else bins["8.0+"]++;
+  });
+
+  const svg = d3.select("#magnitude-chart");
+  const width = 400;
+const height = 250;
+svg.attr("width", width).attr("height", height);
+  const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+
+  svg.selectAll("*").remove(); // ✅ Clear old content
+  
+
+  const x = d3.scaleBand()
+    .domain(Object.keys(bins))
+    .range([0, chartWidth])
+    .padding(0.2);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(Object.values(bins))])
+    .range([chartHeight, 0]);
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  
+  
+
+  // Bars
+  g.selectAll(".bar")
+    .data(Object.entries(bins))
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("x", d => x(d[0]))
+    .attr("y", d => y(d[1]))
+    .attr("width", x.bandwidth())
+    .attr("height", d => chartHeight - y(d[1]))
+    .attr("fill", "#f7c948")
+    .on("mouseover", function (event, d) {
+      const [label, count] = d;
+      d3.select(this).attr("fill", "#e67e22");
+      const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background", "#333")
+        .style("color", "#fff")
+        .style("padding", "6px")
+        .style("border-radius", "4px")
+        .style("pointer-events", "none")
+        .html(`<strong>${label}</strong><br>${count} quakes`);
+
+        tooltip.style("left", (event.pageX + 15) + "px")
+        .style("top", (event.pageY - 40) + "px")
+        .style("display", "block");
+ 
+    })
+    .on("mousemove", function (event) {
+      d3.select(".tooltip")
+        .style("left", (event.pageX + 15) + "px")
+        .style("top", (event.pageY - 40) + "px");
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("fill", "#f7c948");
+      d3.selectAll(".tooltip").remove();
+    });
+
+  // X-axis
+  g.append("g")
+    .attr("transform", `translate(0,${chartHeight})`)
+    .call(d3.axisBottom(x));
+
+  // Y-axis
+  g.append("g")
+    .call(d3.axisLeft(y));
+}
+
+
+
+function renderDepthChart(data) {
+  const depthBins = {
+    "0–10 km": 0,
+    "11–30 km": 0,
+    "31–70 km": 0,
+    "71–300 km": 0,
+    "300+ km": 0
+  };
+
+  data.forEach(d => {
+    const depth = +d.depth;
+    if (depth <= 10) depthBins["0–10 km"]++;
+    else if (depth <= 30) depthBins["11–30 km"]++;
+    else if (depth <= 70) depthBins["31–70 km"]++;
+    else if (depth <= 300) depthBins["71–300 km"]++;
+    else depthBins["300+ km"]++;
+  });
+
+  const svg = d3.select("#depth-chart");
+  svg.selectAll("*").remove(); // Clear previous chart
+
+  const width = 400;
+  const height = 250;
+  const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+
+  svg.attr("width", width).attr("height", height);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleBand()
+    .domain(Object.keys(depthBins))
+    .range([0, chartWidth])
+    .padding(0.2);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(Object.values(depthBins))])
+    .range([chartHeight, 0]);
+
+  // Bars
+  g.selectAll(".bar")
+    .data(Object.entries(depthBins))
+    .enter()
+    .append("rect")
+    .attr("x", d => x(d[0]))
+    .attr("y", d => y(d[1]))
+    .attr("width", x.bandwidth())
+    .attr("height", d => chartHeight - y(d[1]))
+    .attr("fill", "#3498db")
+    .on("mouseover", function (event, d) {
+      const [label, count] = d;
+      d3.select(this).attr("fill", "#2980b9");
+      const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background", "#333")
+        .style("color", "#fff")
+        .style("padding", "6px 10px")
+        .style("border-radius", "4px")
+        .style("pointer-events", "none")
+        .style("z-index", 9999)
+        .html(`<strong>${label}</strong><br>${count} quakes`)
+        .style("left", (event.pageX + 15) + "px")
+        .style("top", (event.pageY - 40) + "px");
+    })
+    .on("mousemove", function (event) {
+      d3.select(".tooltip")
+        .style("left", (event.pageX + 15) + "px")
+        .style("top", (event.pageY - 40) + "px");
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("fill", "#3498db");
+      d3.selectAll(".tooltip").remove();
+    });
+
+  // Axes
+  g.append("g")
+    .attr("transform", `translate(0,${chartHeight})`)
+    .call(d3.axisBottom(x));
+
+  g.append("g")
+    .call(d3.axisLeft(y));
+}
+
+
+function renderHeatmap(data) {
+  // Remove previous heat layer
+  if (heatLayer) {
+    map.removeLayer(heatLayer);
+  }
+
+  // Build heatmap data: [lat, lon, intensity]
+  const heatData = data.map(d => {
+    const lat = +d.latitude;
+    const lon = +d.longitude;
+    const intensity = Math.min(+d.mag, 7) / 7; // Normalize mag (0–1)
+    return [lat, lon, intensity];
+  });
+
+  // Create heat layer
+  heatLayer = L.heatLayer(heatData, {
+    radius: 20,
+    blur: 15,
+    maxZoom: 6,
+    gradient: {
+      0.2: '#00f',
+      0.4: '#0f0',
+      0.6: '#ff0',
+      0.8: '#f90',
+      1.0: '#f00'
+    }
+  }).addTo(map);
+}
+
+
+
+
+
+
+
 
 // Legend toggle
 document.getElementById("legend-toggle").addEventListener("click", () => {
@@ -253,3 +761,12 @@ document.getElementById('clear-search-btn').addEventListener('click', () => {
     map.removeLayer(window.countryHighlightLayer);
   }
 });
+
+
+document.getElementById('viz-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('viz-panel');
+  panel.classList.toggle('visible');
+});
+
+
+

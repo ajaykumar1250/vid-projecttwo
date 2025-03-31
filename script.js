@@ -3,6 +3,16 @@ const map = L.map('map').setView([20, 0], 2);
 let viewer3D;
 let is3DActive = false;
 
+// Animation variables
+
+let isTimelinePlaying = false;
+let timelineInterval = null;
+let timelineYear = 2025.00;
+const timelineMin = 2004.00;
+const timelineMax = 2025.00;
+let playbackSpeed = 1; // default 1x
+
+
 
 
 
@@ -83,6 +93,28 @@ let heatLayer = null;
 
 let allData = []; // Store full dataset
 let currentYear = null;
+
+
+
+// brush tool initialisation 
+
+let frameData = []; // holds timeline-frame-based data (month or quarter)
+let drawnItems = new L.FeatureGroup().addTo(map);
+let drawControl = new L.Control.Draw({
+  draw: {
+    polygon: false,
+    circle: false,
+    polyline: false,
+    marker: false,
+    circlemarker: false,
+    rectangle: true
+  },
+  edit: {
+    featureGroup: drawnItems,
+    edit: false,
+    remove: true
+  }
+});
 
 
 // 3D Map loading 
@@ -769,4 +801,221 @@ document.getElementById('viz-toggle').addEventListener('click', () => {
 });
 
 
+// Animation logic 
+
+let ghostLayer = L.layerGroup().addTo(map); // holds faded points
+let mainFrameLayer = L.layerGroup().addTo(map); // main quarter points
+
+function getMonthRange(monthYear) {
+  const year = Math.floor(monthYear);
+  const monthFloat = monthYear % 1;
+  const monthIndex = Math.round(monthFloat * 12); // 0–11
+
+  const start = new Date(year, monthIndex, 1);
+  const end = new Date(year, monthIndex + 1, 0); // last day of month
+
+  return { start, end };
+}
+
+
+
+function updateTimelineYear(monthYear) {
+  timelineYear = parseFloat(monthYear.toFixed(3));
+  const { start, end } = getMonthRange(timelineYear);
+
+  // One-month ghost trail
+  const previousMonth = parseFloat((timelineYear - 0.083).toFixed(3));
+  const { start: ghostStart, end: ghostEnd } = getMonthRange(previousMonth);
+
+  const filtered = allData.filter(d => {
+    const t = new Date(d.time);
+    return t >= start && t <= end;
+  });
+
+  const ghostData = allData.filter(d => {
+    const t = new Date(d.time);
+    return t >= ghostStart && t < start;
+  });
+
+  frameData = filtered;
+  ghostLayer.clearLayers();
+  mainFrameLayer.clearLayers();
+
+  // Ghost trail
+  ghostData.forEach(d => {
+    L.circleMarker([+d.latitude, +d.longitude], {
+      radius: 4,
+      fillColor: "#888",
+      color: "#666",
+      weight: 1,
+      opacity: 0.3,
+      fillOpacity: 0.1
+    }).addTo(ghostLayer);
+  });
+
+  // Animated main points
+  filtered.forEach(d => {
+    const mag = +d.mag;
+    const depth = +d.depth;
+    const place = d.place;
+    const color = mag >= 6 ? '#ff0000' :
+                  mag >= 5 ? '#ff8000' :
+                  mag >= 4 ? '#ffff00' : '#00ff00';
+
+    const radius = depth <= 10 ? 4 :
+                   depth <= 30 ? 6 :
+                   depth <= 70 ? 8 :
+                   depth <= 300 ? 10 : 12;
+
+    const circle = L.circleMarker([+d.latitude, +d.longitude], {
+      radius,
+      fillColor: color,
+      color: "#000",
+      weight: 1,
+      opacity: 0,
+      fillOpacity: 0
+    }).bindTooltip(
+      `<b>${place}</b><br/>Mag: ${mag}, Depth: ${depth} km<br/>${new Date(d.time).toLocaleString()}`,
+      { direction: 'top', sticky: true, className: 'quake-tooltip' }
+    ).addTo(mainFrameLayer);
+
+    setTimeout(() => {
+      circle.setStyle({ opacity: 1, fillOpacity: 0.8 });
+    }, 50);
+  });
+
+  // Update charts
+  renderMagnitudeChart(filtered);
+  renderDepthChart(filtered);
+  renderHeatmap(filtered);
+
+  // Update UI
+  const labelMonth = start.toLocaleString('default', { month: 'short', year: 'numeric' });
+  document.getElementById('timeline-label').textContent = labelMonth;
+  document.getElementById('timeline-slider').value = timelineYear;
+}
+
+
+
+function startTimelineAnimation() {
+  clearInterval(timelineInterval); // ✅ cancel any previous interval
+
+  const frameDuration = Math.max(60, 180 / playbackSpeed); // 👈 ensure it's at least 60ms
+
+  timelineInterval = setInterval(() => {
+    if (timelineYear < timelineMax) {
+      updateTimelineYear(parseFloat((timelineYear + 0.083).toFixed(3))); // monthly step
+    } else {
+      stopTimelineAnimation();
+    }
+  }, frameDuration);
+
+  console.log(`Animation started at ${playbackSpeed}x → ${frameDuration}ms/frame`);
+}
+
+
+
+
+
+function stopTimelineAnimation() {
+  clearInterval(timelineInterval);
+  isTimelinePlaying = false;
+  document.getElementById('timeline-play-btn').textContent = '▶️';
+}
+
+
+document.getElementById('timeline-play-btn').addEventListener('click', () => {
+  if (isTimelinePlaying) {
+    stopTimelineAnimation(); // ✅ pauses
+  } else {
+    isTimelinePlaying = true;
+    document.getElementById('timeline-play-btn').textContent = '⏸️';
+    startTimelineAnimation(); // ✅ resumes
+  }
+});
+
+
+document.getElementById('timeline-slider').addEventListener('input', (e) => {
+  updateTimelineYear(parseFloat(e.target.value));
+});
+
+document.getElementById('speed-selector').addEventListener('change', (e) => {
+  playbackSpeed = parseInt(e.target.value);
+
+  if (isTimelinePlaying) {
+    stopTimelineAnimation();        // 🔁 clear old speed
+    isTimelinePlaying = true;       // 🔁 preserve state
+    document.getElementById('timeline-play-btn').textContent = '⏸️';
+    startTimelineAnimation();       // 🔁 start with new speed
+  }
+});
+
+
+
+updateTimelineYear(2004);
+
+
+
+// brush tool logic
+
+let isBrushing = false;
+
+document.getElementById("brush-toggle").addEventListener("click", () => {
+  isBrushing = !isBrushing;
+
+  if (isBrushing) {
+    map.addControl(drawControl);
+  } else {
+    map.removeControl(drawControl);
+    drawnItems.clearLayers();
+    // Optional: Reset to all data
+    updateTimelineYear(timelineYear);
+  }
+});
+
+map.on(L.Draw.Event.CREATED, function (e) {
+  drawnItems.clearLayers();
+  const layer = e.layer;
+  drawnItems.addLayer(layer);
+
+  const bounds = layer.getBounds();
+
+  // Filter the currently visible (timeline-selected) data
+  const brushedData = frameData.filter(d => {
+    const lat = +d.latitude;
+    const lon = +d.longitude;
+    return bounds.contains([lat, lon]);
+  });
+  
+
+  // ✅ Update the charts and heatmap with brushedData
+  renderMagnitudeChart(brushedData);
+  renderDepthChart(brushedData);
+  renderHeatmap(brushedData);
+
+  // ✅ Replace only visible map points
+  mainFrameLayer.clearLayers();
+
+  brushedData.forEach(d => {
+    const mag = +d.mag;
+    const depth = +d.depth;
+    const color = mag >= 6 ? '#ff0000' :
+                  mag >= 5 ? '#ff8000' :
+                  mag >= 4 ? '#ffff00' : '#00ff00';
+
+    const radius = depth <= 10 ? 4 :
+                   depth <= 30 ? 6 :
+                   depth <= 70 ? 8 :
+                   depth <= 300 ? 10 : 12;
+
+    const circle = L.circleMarker([+d.latitude, +d.longitude], {
+      radius,
+      fillColor: color,
+      color: "#000",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).addTo(mainFrameLayer);
+  });
+});
 

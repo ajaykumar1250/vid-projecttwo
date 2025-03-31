@@ -47,7 +47,7 @@ document.querySelectorAll("input[name='basemap']").forEach(radio => {
 const quakeGroup = L.layerGroup();
 window.earthquakeLayer = quakeGroup;
 
-d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
+d3.csv('/data/merged_earthquakes_2004_2025.csv').then(data => {
   data.forEach(d => {
     const lat = +d.latitude;
     const lon = +d.longitude;
@@ -194,7 +194,7 @@ let drawControl = new L.Control.Draw({
 
 
 // Load full data once and keep in memory
-d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
+d3.csv('/data/merged_earthquakes_2004_2025.csv').then(data => {
   data.forEach(d => {
     d.latitude = +d.latitude;
     d.longitude = +d.longitude;
@@ -623,7 +623,7 @@ let miniMap;
 let miniQuakeLayer = L.layerGroup();
 let countryGeoJSON;
 
-d3.json('/vid-projecttwo/data/countries.geo.json').then(geoData => {
+d3.json('/data/countries.geo.json').then(geoData => {
   countryGeoJSON = geoData;
   const countryNames = geoData.features.map(f => f.properties.name);
 
@@ -701,7 +701,7 @@ document.getElementById('mini-map-container').innerHTML = '<div id="mini-map"></
       window.countryHighlightLayer.clearLayers();
     }
 
-    d3.csv('/vid-projecttwo/data/merged_earthquakes_2004_2025.csv').then(data => {
+    d3.csv('/data/merged_earthquakes_2004_2025.csv').then(data => {
       data.forEach(d => {
         const lat = +d.latitude;
         const lon = +d.longitude;

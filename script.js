@@ -278,10 +278,13 @@ function renderMapByYear(year) {
 document.getElementById('toggle-circles').addEventListener('change', function () {
   if (this.checked) {
     map.addLayer(quakeGroup);
+    map.addLayer(mainFrameLayer); // 🔁 Add animated points too
   } else {
     map.removeLayer(quakeGroup);
+    map.removeLayer(mainFrameLayer);
   }
 });
+
 
 document.getElementById('toggle-heatmap').addEventListener('change', function () {
   if (this.checked && heatLayer) {
@@ -307,6 +310,8 @@ function renderMapByDateRange(startDateStr, endDateStr) {
   const end = new Date(endDateStr);
 
   quakeGroup.clearLayers();
+  mainFrameLayer.clearLayers();
+  ghostLayer.clearLayers();
 
   const filtered = allData.filter(d => {
     const quakeTime = new Date(d.time);
@@ -391,10 +396,14 @@ document.getElementById('reset-date-range').addEventListener('click', () => {
   document.getElementById('end-date').value = '';
   document.getElementById('date-range-panel').classList.add('hidden');
 
-  // Reset to most recent year (2024)
-  document.getElementById('year-dropdown').value = '2024';
-  renderMapByYear(2024);
+  // Clear date filter & restore timeline view
+  quakeGroup.clearLayers();
+  mainFrameLayer.clearLayers();
+  ghostLayer.clearLayers();
+
+  updateTimelineYear(2025.00); // Reset to Jan 2025
 });
+
 
 // Visualisations section
 
@@ -847,10 +856,22 @@ function updateTimelineYear(monthYear) {
   });
 
   frameData = filtered;
+
+  // Clear old layers
   ghostLayer.clearLayers();
   mainFrameLayer.clearLayers();
 
-  // Ghost trail
+  // 🔁 Remove 2025 static layer if active
+  if (map.hasLayer(quakeGroup)) {
+    map.removeLayer(quakeGroup);
+  }
+
+  // 🔁 Ensure mainFrameLayer is active
+  if (!map.hasLayer(mainFrameLayer) && document.getElementById('toggle-circles').checked) {
+    map.addLayer(mainFrameLayer);
+  }
+
+  // Ghost trail (faded points)
   ghostData.forEach(d => {
     L.circleMarker([+d.latitude, +d.longitude], {
       radius: 4,
@@ -862,7 +883,7 @@ function updateTimelineYear(monthYear) {
     }).addTo(ghostLayer);
   });
 
-  // Animated main points
+  // Main animated points
   filtered.forEach(d => {
     const mag = +d.mag;
     const depth = +d.depth;
@@ -881,28 +902,26 @@ function updateTimelineYear(monthYear) {
       fillColor: color,
       color: "#000",
       weight: 1,
-      opacity: 0,
-      fillOpacity: 0
+      opacity: 1,
+      fillOpacity: 0.8
     }).bindTooltip(
       `<b>${place}</b><br/>Mag: ${mag}, Depth: ${depth} km<br/>${new Date(d.time).toLocaleString()}`,
       { direction: 'top', sticky: true, className: 'quake-tooltip' }
     ).addTo(mainFrameLayer);
-
-    setTimeout(() => {
-      circle.setStyle({ opacity: 1, fillOpacity: 0.8 });
-    }, 50);
+    
   });
 
-  // Update charts
+  // Update visuals
   renderMagnitudeChart(filtered);
   renderDepthChart(filtered);
   renderHeatmap(filtered);
 
-  // Update UI
+  // Update timeline label and slider
   const labelMonth = start.toLocaleString('default', { month: 'short', year: 'numeric' });
   document.getElementById('timeline-label').textContent = labelMonth;
   document.getElementById('timeline-slider').value = timelineYear;
 }
+
 
 
 
@@ -961,7 +980,7 @@ document.getElementById('speed-selector').addEventListener('change', (e) => {
 
 
 
-updateTimelineYear(2004);
+updateTimelineYear(timelineYear);
 
 
 

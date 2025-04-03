@@ -18,6 +18,9 @@
   <!-- Leaflet.heat plugin -->
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+
   <!-- CesiumJS -->
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
@@ -28,11 +31,14 @@
 
 
 </head>
-<body> 
-  <h1>Earthquake Map (2024–2025)</h1>
+<body>
+  <div id="map-title">🌍 Quakes over Time</div>
+
   <!-- Map Controls -->
 <div id="map-controls">
-    <button id="basemap-toggle">🗺 Base Map & Overlays</button>
+  <button id="basemap-toggle" class="circle-btn" title="Map Legend">
+    <i data-lucide="layers"></i>
+  </button>
     <div id="basemap-menu" class="hidden">
       <label><input type="radio" name="basemap" value="streets" /> Streets</label><br/>
       <label><input type="radio" name="basemap" value="satellite" /> Satellite</label><br/>
@@ -43,7 +49,9 @@
       <label><input type="checkbox" id="toggle-heatmap" checked> Heatmap</label>
     </div>
     <!-- Map Legend Button -->
-<button id="legend-toggle">📘 Map Legend</button>
+    <button id="legend-toggle" class="circle-btn" title="Map Legend">
+      <i data-lucide="book-open"></i>
+    </button>
 <div id="legend-box" class="hidden">
   <h4>Legend</h4>
 
@@ -64,7 +72,9 @@
 </div>
 
 <!-- Advanced Search Button -->
-<button id="advanced-search-toggle">🔍 Advanced Search</button>
+<button id="advanced-search-toggle" class="circle-btn" title="Map Legend">
+  <i data-lucide="search"></i>
+</button>
 
 <div id="advanced-search-panel" class="hidden">
   <div id="search-panel-header">
@@ -82,14 +92,12 @@
   </div>
 </div>
 
-<!-- Scrollable Timeline Panel -->
-<div id="year-select-panel">
-  <label for="year-dropdown">Select Year:</label>
-  <select id="year-dropdown"></select>
-</div>
+
 
 <!-- Date Range Selector -->
-<button id="date-range-toggle">📅 Select Date Range</button>
+<button id="date-range-toggle" class="circle-btn" title="Map Legend">
+  <i data-lucide="calendar"></i>
+</button>
 
 <div id="date-range-panel" class="hidden">
   <label for="start-date">Start Date:</label>
@@ -103,12 +111,19 @@
 
 </div>
 
+
+<button id="brush-toggle" class="circle-btn" title="Map Legend">
+  <i data-lucide="brush"></i>
+</button>
+
+</div>
+
 <!-- <div id="magnitude-chart-panel">
   <h3>Earthquake Frequency by Magnitude</h3>
   <svg id="magnitude-chart" width="500" height="300"></svg>
 </div> -->
 
-<button id="brush-toggle">🖌️ Brush Select</button>
+
 
 
 
@@ -130,7 +145,9 @@
 
 
   <!-- Visualizations Toggle Button -->
-<button id="viz-toggle">📊 See Visualizations</button>
+  <button id="viz-toggle" class="circle-btn" title="Map Legend">
+    <i data-lucide="bar-chart-3"></i>
+  </button>
 
 <!-- Sliding Panel -->
 <div id="viz-panel" class="hidden">
@@ -164,6 +181,11 @@
       <input type="range" id="timeline-slider" min="2004" max="2025" value="2025" step="0.083">
     </div>
   </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+  
   
 
   <!-- Script -->

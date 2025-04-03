@@ -1,7 +1,16 @@
 // Create the Leaflet map
-const map = L.map('map').setView([20, 0], 2);
+const map = L.map('map', {
+  zoomControl: false
+}).setView([20, 0], 2);
+
+// Add zoom control in bottom right
+L.control.zoom({
+  position: 'bottomleft'
+}).addTo(map);
+
 let viewer3D;
 let is3DActive = false;
+
 
 // Animation variables
 

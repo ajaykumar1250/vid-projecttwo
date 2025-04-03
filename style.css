@@ -5,17 +5,12 @@ body {
     color: #fff;
   }
   
-  h1 {
-    text-align: center;
-    padding: 10px;
-    color: #f7c948;
-  }
   
   #map {
-    height: 90vh;
+    height: 100vh;
     width: 100%;
-    border-top: 2px solid #444;
   }
+  
   .leaflet-tooltip.quake-tooltip {
     background-color: #333;
     color: #fff;
@@ -26,10 +21,19 @@ body {
   }
   #map-controls {
     position: absolute;
-    top: 70px;
-    left: 15px;
+    top: 50%; /* Initial vertical centering */
+    left: 20px;
     z-index: 1000;
-  }
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertical centering along the main axis */
+    align-items: flex-start; /* Align items to the start of the cross axis */
+    height: 80vh; /* Set a height for the container */
+    transform: translateY(-50%); /* Fine-tune vertical centering */
+    gap: 10px; /* Spacing between buttons */
+    padding: 10px;
+}
   
   #basemap-toggle {
     background-color: #f7c948;
@@ -293,15 +297,12 @@ body {
 }
 
 #year-select-panel {
-  position: absolute;
-  top: 70px;
-  right: 15px;
   background-color: #1e1e1e;
   border: 1px solid #444;
   padding: 10px;
   border-radius: 6px;
-  z-index: 1000;
   color: #fff;
+  width: 150px;
 }
 
 #year-select-panel label {
@@ -418,8 +419,9 @@ body {
 
 #viz-toggle {
   position: absolute;
-  top: 80px;
+  top: 50%;
   right: 10px;
+  transform: translateY(-50%);
   z-index: 9999;
   background-color: #27ae60;
   color: white;
@@ -430,6 +432,7 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
+
 
 #viz-panel {
   position: absolute;
@@ -562,10 +565,6 @@ body {
 /* brush selector */
 
 #brush-toggle {
-  position: absolute;
-  top: 140px;
-  right: 10px;
-  z-index: 9999;
   background-color: #9b59b6;
   color: white;
   border: none;
@@ -575,8 +574,48 @@ body {
   cursor: pointer;
 }
 
+.leaflet-control-zoom {
+  margin-bottom: 20px !important;
+  margin-right: 20px !important;
+}
 
+#map-title {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background-color: rgba(30, 30, 30, 0.85);
+  padding: 8px 14px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #f7c948;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
 
-  
+.circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #2c2c2c;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  transition: background 0.2s ease;
+}
+
+.circle-btn:hover {
+  background-color: #444;
+}
+
+.circle-btn i {
+  width: 22px;
+  height: 22px;
+  stroke: #fff;
+}
+
   
   
